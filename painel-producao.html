@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Produção OléVM - Meta de Faturamento 2026.1</title>
+<style>
+:root{
+  --bg:#0f1418; --surface:#1a2128; --surface2:#222b35; --border:#2c3744;
+  --txt:#e6ecf2; --txt2:#9aa7b6; --accent:#4aa8ff;
+  --green:#22c55e; --yellow:#eab308; --red:#ef4444; --blue:#3b82f6;
+  --green-bg:rgba(34,197,94,.15); --yellow-bg:rgba(234,179,8,.15); --red-bg:rgba(239,68,68,.15);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px;line-height:1.4}
+.wrap{max-width:1100px;margin:0 auto;padding:16px;padding-bottom:90px}
+
+/* Header compacto */
+.topbar{background:linear-gradient(135deg,#1a2128,#222b35);border-radius:14px;padding:14px 18px;margin-bottom:12px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.topbar h1{font-size:17px;letter-spacing:-.3px}
+.topbar .sub{color:var(--txt2);font-size:11px;margin-top:2px}
+.topbar .right{text-align:right;font-size:11px;color:var(--txt2)}
+.topbar .right b{color:var(--txt);font-size:13px;font-weight:700}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;background:var(--surface);border-radius:12px;padding:6px;margin-bottom:14px;overflow-x:auto;border:1px solid var(--border);scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;background:transparent;color:var(--txt2);border:none;padding:10px 14px;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px;font-family:inherit;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:6px}
+.tab:hover{color:var(--txt);background:rgba(255,255,255,.04)}
+.tab.active{background:var(--accent);color:#0a1218}
+.tab .badge{background:rgba(0,0,0,.25);padding:1px 6px;border-radius:10px;font-size:10px;font-weight:700}
+.tab.active .badge{background:rgba(255,255,255,.3);color:#0a1218}
+
+/* Panes */
+.pane{display:none;animation:fadeIn .2s ease-out}
+.pane.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* Geral */
+h2{font-size:15px;margin:0 0 10px;color:var(--txt);font-weight:700;letter-spacing:-.2px}
+h3{font-size:13px;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 8px;font-weight:700}
+section{background:var(--surface);border-radius:12px;padding:16px;margin-bottom:12px;border:1px solid var(--border)}
+.tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:.2px}
+.tag-meta{background:var(--accent);color:#0a1218;margin-left:6px}
+.tag-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green)}
+.tag-yellow{background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow)}
+.tag-red{background:var(--red-bg);color:var(--red);border:1px solid var(--red)}
+.tag-blue{background:rgba(59,130,246,.15);color:var(--blue);border:1px solid var(--blue)}
+
+/* KPIs */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.kpi{background:var(--surface2);padding:12px 14px;border-radius:10px;border:1px solid var(--border)}
+.kpi .l{font-size:10px;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px}
+.kpi .v{font-size:19px;font-weight:700;margin-top:3px}
+.kpi .v.s{font-size:14px}
+
+/* Cascata */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+.card{background:var(--surface2);border-radius:10px;padding:12px;border:1px solid var(--border)}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:6px}
+.card-title{font-weight:700;font-size:14px;letter-spacing:.3px}
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;margin-bottom:10px}
+.card-grid div{background:rgba(0,0,0,.2);padding:6px 8px;border-radius:6px}
+.card-grid .lbl{color:var(--txt2);font-size:10px;text-transform:uppercase;letter-spacing:.3px}
+.card-grid .val{font-weight:700;font-size:13px}
+.bar-wrap{background:rgba(0,0,0,.3);border-radius:6px;height:18px;overflow:hidden;position:relative;margin-bottom:6px}
+.bar-fill{height:100%;background:var(--green);transition:width .3s,background .3s;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-size:11px;font-weight:700;color:#fff}
+.bar-target{position:absolute;top:0;bottom:0;width:2px;background:#fff;opacity:.6}
+.input-row{display:flex;gap:6px;align-items:center;font-size:12px;flex-wrap:wrap}
+input[type="number"],input[type="text"]{background:rgba(0,0,0,.3);border:1px solid var(--border);color:var(--txt);padding:5px 8px;border-radius:6px;font-size:12px;width:80px;font-family:inherit}
+input[type="number"]:focus,input[type="text"]:focus{outline:none;border-color:var(--accent)}
+
+/* Tabela farol */
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:8px 6px;color:var(--txt2);text-transform:uppercase;font-size:10px;letter-spacing:.5px;border-bottom:1px solid var(--border);font-weight:600}
+td{padding:8px 6px;border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:none}
+
+/* Timeline */
+.timeline{display:flex;flex-direction:column;gap:8px}
+.tl-item{display:flex;gap:12px;background:var(--surface2);border-radius:8px;padding:10px 12px;border:1px solid var(--border);align-items:flex-start}
+.tl-week{min-width:64px;font-weight:700;color:var(--accent);font-size:12px}
+.tl-content{flex:1;font-size:12px}
+.tl-content strong{color:var(--txt)}
+.tl-marks{margin-top:4px;color:var(--txt2);font-size:11px;line-height:1.6}
+
+/* Ações */
+.action-list{display:flex;flex-direction:column;gap:6px}
+.action{display:flex;gap:10px;align-items:center;padding:8px 10px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);font-size:12px;flex-wrap:wrap}
+.action select{background:rgba(0,0,0,.3);border:1px solid var(--border);color:var(--txt);padding:4px 8px;border-radius:6px;font-size:11px;font-family:inherit;min-width:120px}
+.action .desc{flex:1;line-height:1.4;min-width:200px}
+.action .resp{color:var(--accent);font-weight:600;font-size:11px}
+.action .due{font-size:11px;color:var(--txt2);font-weight:600}
+.action.done{opacity:.55}
+.action.done .desc{text-decoration:line-through}
+.action .del{background:transparent;border:none;color:var(--txt2);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:4px;transition:all .15s}
+.action .del:hover{background:var(--red-bg);color:var(--red)}
+
+/* Grupos de semana nas Ações */
+.week-group{margin-top:14px}
+.week-group:first-child{margin-top:0}
+.week-header{display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(74,168,255,0.08);border-left:3px solid var(--accent);border-radius:6px;margin-bottom:8px;font-size:12px;font-weight:700;letter-spacing:.3px;color:var(--accent)}
+.week-header.current{background:rgba(74,168,255,0.18)}
+.week-header.continuas{background:rgba(154,167,182,0.1);border-left-color:var(--txt2);color:var(--txt2)}
+.week-header.outras{background:rgba(154,167,182,0.06);border-left-color:var(--border);color:var(--txt2)}
+.week-header .count{background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:10px;font-size:10px;margin-left:auto;color:var(--txt)}
+
+/* Form add ação */
+.add-form{background:var(--surface2);border-radius:10px;padding:12px;border:1px dashed var(--border);margin-bottom:12px}
+.add-form-row{display:grid;grid-template-columns:140px 1fr 130px auto;gap:8px;align-items:end}
+.add-form-row label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:.3px;font-weight:600}
+.add-form input,.add-form textarea{background:rgba(0,0,0,.3);border:1px solid var(--border);color:var(--txt);padding:7px 9px;border-radius:6px;font-size:12px;width:100%;font-family:inherit;text-transform:none;letter-spacing:0}
+.add-form textarea{resize:vertical;min-height:34px;max-height:100px}
+.add-form input:focus,.add-form textarea:focus{outline:none;border-color:var(--accent)}
+.add-form .add-btn{height:32px;align-self:end}
+.actions-bar-inline{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;font-size:12px}
+
+/* Bottom action bar */
+.bottombar{position:fixed;bottom:0;left:0;right:0;background:rgba(15,20,24,.95);backdrop-filter:blur(8px);border-top:1px solid var(--border);padding:10px 16px;z-index:100}
+.bottombar-inner{max-width:1100px;margin:0 auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{background:var(--accent);color:#0a1218;border:none;padding:8px 14px;border-radius:8px;font-weight:700;cursor:pointer;font-size:12px;font-family:inherit}
+.btn:hover{filter:brightness(1.1)}
+.btn-ghost{background:transparent;color:var(--txt);border:1px solid var(--border)}
+
+/* Visão Geral */
+.alert-list{display:flex;flex-direction:column;gap:6px}
+.alert-item{display:flex;gap:8px;align-items:center;padding:8px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);font-size:12px}
+.alert-item .ico{font-size:14px}
+.mini-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.mini{background:var(--surface2);padding:10px 12px;border-radius:8px;border:1px solid var(--border)}
+.mini .nome{font-size:11px;color:var(--txt2);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.mini .pct{font-size:18px;font-weight:700;margin:4px 0}
+.mini .meta{font-size:10px;color:var(--txt2)}
+.mini .bar{height:5px;background:rgba(0,0,0,.3);border-radius:3px;overflow:hidden;margin-top:5px}
+.mini .bar > div{height:100%;background:var(--green)}
+
+.totalbar{height:24px;border-radius:8px;background:rgba(0,0,0,.3);position:relative;overflow:hidden;margin:10px 0;border:1px solid var(--border)}
+.totalbar .fill{height:100%;background:linear-gradient(90deg,#3b82f6,#22c55e);display:flex;align-items:center;justify-content:flex-end;padding-right:10px;font-size:12px;font-weight:700;color:#fff}
+
+.legend{display:flex;gap:12px;font-size:11px;margin-top:6px;color:var(--txt2);flex-wrap:wrap}
+.legend span{display:flex;align-items:center;gap:4px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.dot-g{background:var(--green)}.dot-y{background:var(--yellow)}.dot-r{background:var(--red)}
+.txt2{color:var(--txt2);font-size:11px}
+.note{font-size:11px;color:var(--txt2);margin-top:8px;line-height:1.6}
+
+/* Riscos */
+.risk-list{display:flex;flex-direction:column;gap:8px}
+.risk{display:flex;gap:12px;align-items:flex-start;background:var(--surface2);padding:12px;border-radius:8px;border:1px solid var(--border);font-size:12px}
+.risk .num{background:var(--red-bg);color:var(--red);border:1px solid var(--red);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:12px}
+.risk .body{flex:1;line-height:1.5}
+.risk .body strong{color:var(--txt)}
+
+@media(max-width:600px){
+  .wrap{padding:10px;padding-bottom:90px}
+  .topbar{padding:10px 12px}
+  .topbar h1{font-size:15px}
+  .tab{padding:8px 10px;font-size:12px}
+  .kpi .v{font-size:16px}
+  .cards{grid-template-columns:1fr}
+  .card-grid{grid-template-columns:1fr 1fr}
+  th{font-size:9px;padding:6px 3px}
+  td{padding:6px 3px;font-size:11px}
+  .tl-week{min-width:50px;font-size:11px}
+  .action select{min-width:110px}
+  .add-form-row{grid-template-columns:1fr;gap:8px}
+}
+@media print{
+  body{background:#fff;color:#000}
+  .pane{display:block!important}
+  .tabs,.bottombar{display:none}
+  section,.topbar,.card,.action,.tl-item,.kpi,.mini,.risk,.alert-item{background:#fff;border:1px solid #888;color:#000}
+  h3{color:#000;border-bottom:1px solid #888;padding-bottom:4px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="topbar">
+  <div>
+    <h1>Painel de Produção OléVM - Meta de Faturamento 2026.1</h1>
+    <div class="sub">Plano de Ação 09/05 → 06/07</div>
+  </div>
+  <div class="right">
+    <div>Hoje</div>
+    <b id="today">—</b>
+    <div style="margin-top:4px">Faltam <b id="diasRest">—</b></div>
+  </div>
+</div>
+
+<nav class="tabs" id="tabsNav">
+  <button class="tab active" data-tab="visao">📊 Visão Geral</button>
+  <button class="tab" data-tab="etapas">🏗️ Cascata de Etapas</button>
+  <button class="tab" data-tab="crono">📅 Cronograma</button>
+  <button class="tab" data-tab="acoes">✅ Ações <span class="badge" id="badgeAcoes">—</span></button>
+  <button class="tab" data-tab="farol">🚦 Farol</button>
+  <button class="tab" data-tab="curvas">📈 PPC - Curva S</button>
+  <button class="tab" data-tab="riscos">⚠️ Riscos</button>
+</nav>
+
+<!-- ============================ ABA 1: VISÃO GERAL ============================ -->
+<div class="pane active" id="pane-visao">
+
+  <section>
+    <h2>Resumo do Semestre</h2>
+    <div class="kpi-row">
+      <div class="kpi"><div class="l">Meta de Faturamento</div><div class="v">132 casas <span class="tag tag-meta">06/07</span></div></div>
+      <div class="kpi"><div class="l">Próxima AR</div><div class="v s">11/06 (qui) 08h</div></div>
+      <div class="kpi"><div class="l">Progresso Global</div><div class="v" id="progGlobal">—</div></div>
+      <div class="kpi"><div class="l">Ações Concluídas</div><div class="v" id="kpiAcoes">—</div></div>
+    </div>
+    <div class="totalbar"><div class="fill" id="globalBar" style="width:0%">0%</div></div>
+    <div class="note">Progresso global = média ponderada das 7 etapas pelo passivo de unidades. Atualizar toda sexta após o PPC.</div>
+  </section>
+
+  <section>
+    <h2>Status por Etapa</h2>
+    <div class="legend">
+      <span><i class="dot dot-g"></i> No ritmo</span>
+      <span><i class="dot dot-y"></i> Atenção</span>
+      <span><i class="dot dot-r"></i> Atrasado</span>
+    </div>
+    <div class="mini-grid" id="miniEtapas" style="margin-top:10px"></div>
+  </section>
+
+  <section>
+    <h2>Alertas e Próximos Marcos</h2>
+    <h3>Atenção desta semana</h3>
+    <div class="alert-list" id="alertList"></div>
+    <h3>Próximos 14 dias</h3>
+    <div class="alert-list" id="next14"></div>
+  </section>
+
+</div>
+
+<!-- ============================ ABA 2: ETAPAS ============================ -->
+<div class="pane" id="pane-etapas">
+  <section>
+    <h2>Cascata de Etapas — Passivo Realizado vs. Meta</h2>
+    <div class="legend">
+      <span><i class="dot dot-g"></i> No ritmo</span>
+      <span><i class="dot dot-y"></i> Atenção</span>
+      <span><i class="dot dot-r"></i> Atrasado</span>
+      <span style="margin-left:auto">Edite "Realizado" e "Ritmo sem." toda sexta após o PPC.</span>
+    </div>
+    <div class="cards" id="etapasCards" style="margin-top:10px"></div>
+    <div class="note">A barra branca vertical mostra onde o realizado <strong>deveria estar hoje</strong> dado o quanto do prazo já passou. Status considera tolerância de ±5% (amarelo) e ±15% (vermelho).</div>
+  </section>
+</div>
+
+<!-- ============================ ABA 3: CRONOGRAMA ============================ -->
+<div class="pane" id="pane-crono">
+  <section>
+    <h2>Cronograma das 9 Semanas — Marcos Críticos</h2>
+    <div class="timeline" id="timeline"></div>
+    <div class="note">★ marcos de prazo (data-meta) | ✦ entregas de ações | ★★★ porta do faturamento</div>
+  </section>
+</div>
+
+<!-- ============================ ABA 4: AÇÕES ============================ -->
+<div class="pane" id="pane-acoes">
+  <section>
+    <h2>Ações Transversais</h2>
+
+    <div class="add-form">
+      <div class="add-form-row">
+        <label>Responsável<input type="text" id="newResp" placeholder="Ex.: Danilo + RH"></label>
+        <label>Descrição<textarea id="newDesc" placeholder="O que precisa ser feito?"></textarea></label>
+        <label>Prazo<input type="date" id="newDue"></label>
+        <button class="btn add-btn" onclick="adicionarAcao()">+ Adicionar</button>
+      </div>
+    </div>
+
+    <div class="actions-bar-inline">
+      <span class="txt2" id="acoesResumo">—</span>
+      <button class="btn btn-ghost" style="margin-left:auto;font-size:11px;padding:6px 10px" onclick="restaurarPadrao()">↺ Restaurar lista padrão</button>
+    </div>
+
+    <div class="action-list" id="actionList"></div>
+    <div class="note">Status: ⏳ Pendente / 🔵 Em curso / ⚠️ Em risco / ✅ Concluído. Itens concluídos ficam riscados. Ações adicionadas aqui também aparecem em "Próximos 14 dias" na Visão Geral.</div>
+  </section>
+</div>
+
+<!-- ============================ ABA 5: FAROL ============================ -->
+<div class="pane" id="pane-farol">
+  <section>
+    <h2>Indicadores de Farol — Atualização Semanal</h2>
+    <div style="overflow-x:auto">
+      <table class="farol-table">
+        <thead>
+          <tr><th>Indicador</th><th>Verde</th><th>Amarelo</th><th>Vermelho</th><th>Realizado</th><th>Status</th></tr>
+        </thead>
+        <tbody id="farolTbody"></tbody>
+      </table>
+    </div>
+    <div class="note">Regra de cobrança: <strong>2 semanas seguidas em vermelho</strong> → vira pauta única na rotina 1:1 da próxima semana e sobe para o Comitê Técnico se persistir.</div>
+  </section>
+</div>
+
+<!-- ============================ ABA 7: CURVA S ============================ -->
+<div class="pane" id="pane-curvas">
+  <section>
+    <h2>PPC - Curva S <span class="txt2" style="font-weight:400;font-size:12px">(Percentual de Plano Concluído)</span></h2>
+
+    <div class="kpi-row" style="margin-bottom:14px">
+      <div class="kpi"><div class="l">Semana de Referência</div><div class="v s" id="ppcSemAtual">—</div></div>
+      <div class="kpi"><div class="l">PPC Previsto</div><div class="v" id="ppcPrev">—</div></div>
+      <div class="kpi"><div class="l">PPC Realizado</div><div class="v" id="ppcReal">—</div></div>
+      <div class="kpi"><div class="l">Variação</div><div class="v s" id="ppcVar">—</div></div>
+    </div>
+
+    <div id="curvaSContainer"></div>
+
+    <div class="actions-bar-inline" style="margin-top:14px">
+      <strong style="font-size:13px">Tabela de Acompanhamento Semanal</strong>
+      <button class="btn btn-ghost" onclick="puxarRealizadoEtapas()" style="margin-left:auto;font-size:11px;padding:6px 10px">↻ Puxar realizado das etapas (semana atual)</button>
+    </div>
+
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>Semana</th><th>Sexta</th><th>Previsto %</th><th>Realizado %</th><th>Variação</th><th>Status</th></tr>
+        </thead>
+        <tbody id="ppcTbody"></tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <strong>Como usar:</strong> a Curva S compara o avanço previsto (linha cinza, baseline) com o realizado (linha laranja). Edite as colunas Previsto/Realizado conforme o PPC apurado em cada sexta-feira. O botão <strong>"Puxar realizado das etapas"</strong> calcula automaticamente o PPC atual a partir do progresso preenchido na aba Cascata de Etapas (média ponderada pelas unidades de cada etapa).<br><br>
+      <strong>Leitura:</strong> linha laranja <em>acima</em> da cinza = adiantado · linha laranja <em>abaixo</em> = atrasado · cruzamento = mudança de tendência. A linha vertical azul tracejada marca o "HOJE".
+    </div>
+  </section>
+</div>
+
+<!-- ============================ ABA 8: RISCOS ============================ -->
+<div class="pane" id="pane-riscos">
+  <section>
+    <h2>6 Riscos Prioritários</h2>
+    <div class="risk-list">
+      <div class="risk"><div class="num">1</div><div class="body"><strong>Chuva residual em maio</strong> — impacta RADIER e MONTAGEM diretamente. Mitigação: pulmão de produtividade já considera + caixas sanitárias na frente das casas (Eduardo).</div></div>
+      <div class="risk"><div class="num">2</div><div class="body"><strong>Curva de aprendizado da terceirização ACAB1</strong> — escopo afunilado para reduzir esse risco. Primeiro lote 12/05 é o teste-piloto. Sem 3 casas/semana da terceirização, ACAB1 fura a data-meta de 30/06.</div></div>
+      <div class="risk"><div class="num">3</div><div class="body"><strong>G9 não ativar em junho</strong> — sem ele, ACAB1 fura mesmo com terceirização rodando. RH precisa de prazo claro até 02/06.</div></div>
+      <div class="risk"><div class="num">4</div><div class="body"><strong>Despesa Habitação > R$ 500k em maio</strong> — compromete PPR e força nova rodada de corte. Plano de Danilo para 11/05 é decisivo.</div></div>
+      <div class="risk"><div class="num">5</div><div class="body"><strong>AT acumulando > 100 chamados</strong> — desvia equipe de produção para retrabalho. Aplicativo dos supervisores ataca a causa em tempo real (entrega 12/05).</div></div>
+      <div class="risk"><div class="num">6</div><div class="body"><strong>Acesso do Monteiro travado na chuva</strong> — falha aqui custa 1 dia inteiro de fábrica+montagem. Eduardo já assumiu o compromisso 7h.</div></div>
+    </div>
+  </section>
+</div>
+
+</div>
+
+<div class="bottombar">
+  <div class="bottombar-inner">
+    <button class="btn" onclick="salvar()">💾 Salvar</button>
+    <button class="btn btn-ghost" onclick="exportar()">⤓ Exportar JSON</button>
+    <button class="btn btn-ghost" onclick="resetar()">↻ Resetar</button>
+    <button class="btn btn-ghost" onclick="window.print()">🖨️ Imprimir</button>
+    <span class="txt2" id="saveStatus" style="margin-left:auto;align-self:center"></span>
+  </div>
+</div>
+
+<script>
+// ============= DADOS =============
+const ETAPAS = [
+  {id:'radier',crit:1,nome:'RADIER',resp:'Eduardo',unid:57,dias:20,prodDia:2.85,prodSem:14.25,dataMeta:'2026-05-29'},
+  {id:'fab',crit:2,nome:'FABRICAÇÃO',resp:'José Felipe',unid:81,dias:32,prodDia:2.53,prodSem:12.66,dataMeta:'2026-06-16'},
+  {id:'mont',crit:3,nome:'MONTAGEM',resp:'José Felipe',unid:84,dias:34,prodDia:2.47,prodSem:12.35,dataMeta:'2026-06-18'},
+  {id:'acab1',crit:4,nome:'ACAB1',resp:'Danilo',unid:95,dias:42,prodDia:2.26,prodSem:11.31,dataMeta:'2026-06-30'},
+  {id:'acab2',crit:5,nome:'ACAB2',resp:'Danilo',unid:107,dias:46,prodDia:2.33,prodSem:11.63,dataMeta:'2026-07-06'},
+  {id:'infra1',crit:6,nome:'INFRA1',resp:'Eduardo',unid:132,dias:46,prodDia:2.87,prodSem:14.35,dataMeta:'2026-07-06'},
+  {id:'infra2',crit:7,nome:'INFRA2',resp:'Eduardo',unid:132,dias:46,prodDia:2.87,prodSem:14.35,dataMeta:'2026-07-06'}
+];
+
+const SEMANAS = [
+  {id:'s1',label:'S1 — 11-15/05',marcos:['<strong>12/05 ✦ TERCEIRIZAÇÃO ACAB1</strong>: receber 1ª empresa','<strong>12/05 ✦ APP supervisores no ar</strong> (Synara+Danilo)','<strong>15/05</strong>: NC % Rendimento Fábrica abr lançada (J. Felipe)','PPC Industrial Sex 15/05']},
+  {id:'s2',label:'S2 — 18-22/05',marcos:['<strong>22/05</strong>: Falta Entrar Infra revisado (Synara+Eduardo)','Mutirão plantio Itaitinga (Adriele 20-22/05)','PPC Industrial Sex 22/05']},
+  {id:'s3',label:'S3 — 25-29/05',marcos:['<strong>★ 29/05 — DATA-META RADIER (57 unid.)</strong>','<strong>30/05 ✦ Olé Vision 1ª saída concreta</strong>','PPC Industrial Sex 29/05']},
+  {id:'s4',label:'S4 — 01-05/06',marcos:['<strong>02/06 ✦ G9 ATIVADO</strong>','Fechamento operacional de maio','PPC Industrial Sex 05/06']},
+  {id:'s5',label:'S5 — 08-12/06',marcos:['<strong>★ 11/06 — AR MAIO/2026 (08h)</strong>','PPC Industrial Sex 12/06']},
+  {id:'s6',label:'S6 — 15-19/06',marcos:['<strong>★ 16/06 — DATA-META FABRICAÇÃO (81 unid.)</strong>','<strong>★ 18/06 — DATA-META MONTAGEM (84 unid.)</strong>','PPC Industrial Sex 19/06']},
+  {id:'s7',label:'S7 — 22-26/06',marcos:['Pré-fechamento ACAB1','PPC Industrial Sex 26/06']},
+  {id:'s8',label:'S8 — 29/06-03/07',marcos:['<strong>★ 30/06 — DATA-META ACAB1 (95 unid.)</strong>','<strong>30/06 ✦ G10 mapeado</strong>','PPC Industrial Sex 03/07']},
+  {id:'s9',label:'S9 — 06-10/07',marcos:['<strong>★★★ 06/07 — DATA-META FATURAMENTO</strong>','ACAB2 (107) + INFRA1 (132) + INFRA2 (132)','Fechamento Semestre 2026.1']}
+];
+
+const ACOES_SEED = [
+  {id:'a1',resp:'Danilo',desc:'Receber 1ª empresa terceirizada ACAB1 (cerâmica/porcelanato/metais — sem coberta/junta/época)',due:'12/05',dueDt:'2026-05-12'},
+  {id:'a2',resp:'Synara+Danilo',desc:'Aplicativo dos supervisores em uso (alimenta retrabalho em tempo real)',due:'12/05',dueDt:'2026-05-12'},
+  {id:'a3',resp:'Danilo',desc:'Plano de corte de despesas mai+jun (alvo R$ 350k/mês)',due:'11/05',dueDt:'2026-05-11'},
+  {id:'a4',resp:'José Felipe',desc:'Lançar NC do estouro de % Rendimento da Fábrica (abril) na extranet',due:'15/05',dueDt:'2026-05-15'},
+  {id:'a5',resp:'José Felipe',desc:'Acelerar contratações para fechar quadro (35% incompleto)',due:'30/05',dueDt:'2026-05-30'},
+  {id:'a6',resp:'Eduardo',desc:'Sustentar acesso do Monteiro pronto antes das 7h todos os dias úteis',due:'diário',dueDt:null},
+  {id:'a7',resp:'José Felipe',desc:'Validar queda de retrabalho na 1ª quadra com régua/forma corrigidas',due:'30/05',dueDt:'2026-05-30'},
+  {id:'a8',resp:'Synara+Eduardo',desc:'Falta Entrar Infra revisado + aditivos lançados (terceirizadas + alocação)',due:'22/05',dueDt:'2026-05-22'},
+  {id:'a9',resp:'Synara+Sena',desc:'Olé Vision: 1ª saída concreta da IA (sequenciamento + cronograma hora-a-hora)',due:'30/05',dueDt:'2026-05-30'},
+  {id:'a10',resp:'Léo+Anna K.',desc:'Pré-AR Suprimentos Produção EC (2 meses fechados — Curva A, Atend. Volume, Pontualidade, PMP)',due:'12-16/05',dueDt:'2026-05-16'},
+  {id:'a11',resp:'Danilo+RH',desc:'G9 ativado (grupo próprio operando)',due:'02/06',dueDt:'2026-06-02'},
+  {id:'a12',resp:'Eduardo+Controladoria',desc:'Pedir abertura de "material aplicado" por subconta (sem concentrar em terraplanagem)',due:'30/05',dueDt:'2026-05-30'},
+  {id:'a13',resp:'Danilo+RH',desc:'G10 mapeado e prospecção concluída',due:'30/06',dueDt:'2026-06-30'},
+  {id:'a14',resp:'Felipe Holanda',desc:'Definir SPE do Riemburgo (decisão pendente)',due:'31/05',dueDt:'2026-05-31'}
+];
+
+function getAcoes(){
+  if(!estado.lista) return ACOES_SEED.slice();
+  return estado.lista;
+}
+
+function adicionarAcao(){
+  const resp = document.getElementById('newResp').value.trim();
+  const desc = document.getElementById('newDesc').value.trim();
+  const dueDt = document.getElementById('newDue').value || null;
+  if(!resp || !desc){
+    alert('Preencha pelo menos Responsável e Descrição.');
+    return;
+  }
+  const due = dueDt ? new Date(dueDt+'T00:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}) : '—';
+  const novo = {id:'c-'+Date.now(),resp,desc,due,dueDt};
+  const lista = getAcoes();
+  lista.push(novo);
+  estado.lista = lista;
+  document.getElementById('newResp').value='';
+  document.getElementById('newDesc').value='';
+  document.getElementById('newDue').value='';
+  render();
+  salvar();
+}
+
+function excluirAcao(id){
+  const lista = getAcoes().filter(a=>a.id!==id);
+  estado.lista = lista;
+  if(estado.acoes && estado.acoes[id]) delete estado.acoes[id];
+  render();
+  salvar();
+}
+
+// Mapa de semanas (mesmo range da aba Curva S)
+const SEMANA_RANGES = [
+  {id:'s1',label:'S1 — 11-15/05',ini:'2026-05-09',fim:'2026-05-15'},
+  {id:'s2',label:'S2 — 18-22/05',ini:'2026-05-16',fim:'2026-05-22'},
+  {id:'s3',label:'S3 — 25-29/05',ini:'2026-05-23',fim:'2026-05-29'},
+  {id:'s4',label:'S4 — 01-05/06',ini:'2026-05-30',fim:'2026-06-05'},
+  {id:'s5',label:'S5 — 08-12/06',ini:'2026-06-06',fim:'2026-06-12'},
+  {id:'s6',label:'S6 — 15-19/06',ini:'2026-06-13',fim:'2026-06-19'},
+  {id:'s7',label:'S7 — 22-26/06',ini:'2026-06-20',fim:'2026-06-26'},
+  {id:'s8',label:'S8 — 29/06-03/07',ini:'2026-06-27',fim:'2026-07-03'},
+  {id:'s9',label:'S9 — 06-10/07',ini:'2026-07-04',fim:'2026-07-10'}
+];
+function semanaDaAcao(a){
+  if(!a.dueDt) return 'continuas';
+  const d = new Date(a.dueDt+'T00:00:00');
+  for(const r of SEMANA_RANGES){
+    const di = new Date(r.ini+'T00:00:00');
+    const df = new Date(r.fim+'T23:59:59');
+    if(d >= di && d <= df) return r.id;
+  }
+  return 'outras';
+}
+function semanaAtualId(){
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  for(const r of SEMANA_RANGES){
+    const df = new Date(r.fim+'T23:59:59');
+    if(hoje <= df) return r.id;
+  }
+  return null;
+}
+
+function restaurarPadrao(){
+  if(!confirm('Vai restaurar a lista original (14 ações da AR de 08/05) e remover as ações que você adicionou. Os status já marcados nas ações originais serão mantidos. Confirma?')) return;
+  delete estado.lista;
+  // Limpar status de ações custom (com id começando com "c-")
+  if(estado.acoes){
+    Object.keys(estado.acoes).forEach(k=>{if(k.startsWith('c-')) delete estado.acoes[k]});
+  }
+  render();
+  salvar();
+}
+
+const PPC_SEMANAS = [
+  {id:'ps1',label:'S1',dataRef:'2026-05-15',prev:5},
+  {id:'ps2',label:'S2',dataRef:'2026-05-22',prev:13},
+  {id:'ps3',label:'S3',dataRef:'2026-05-29',prev:25},
+  {id:'ps4',label:'S4',dataRef:'2026-06-05',prev:40},
+  {id:'ps5',label:'S5',dataRef:'2026-06-12',prev:55},
+  {id:'ps6',label:'S6',dataRef:'2026-06-19',prev:70},
+  {id:'ps7',label:'S7',dataRef:'2026-06-26',prev:83},
+  {id:'ps8',label:'S8',dataRef:'2026-07-03',prev:92},
+  {id:'ps9',label:'S9',dataRef:'2026-07-10',prev:100}
+];
+
+function getPpcPrev(id){
+  const v = estado.ppc?.[id]?.prev;
+  if(v !== undefined && v !== '' && v !== null) return parseFloat(v);
+  const s = PPC_SEMANAS.find(x=>x.id===id);
+  return s ? s.prev : null;
+}
+function getPpcReal(id){
+  const v = estado.ppc?.[id]?.real;
+  if(v !== undefined && v !== '' && v !== null) return parseFloat(v);
+  return null;
+}
+function ppcSemanaAtual(){
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  for(let i=0;i<PPC_SEMANAS.length;i++){
+    const d = new Date(PPC_SEMANAS[i].dataRef+'T00:00:00');
+    if(hoje <= d) return i;
+  }
+  return PPC_SEMANAS.length - 1;
+}
+function ppcAtualEtapas(){
+  let tReal=0, tUnid=0;
+  ETAPAS.forEach(e=>{
+    tReal += parseFloat(estado.etapas[e.id]?.real || 0);
+    tUnid += e.unid;
+  });
+  return tUnid > 0 ? (tReal/tUnid)*100 : 0;
+}
+function puxarRealizadoEtapas(){
+  const ppc = ppcAtualEtapas();
+  const idx = ppcSemanaAtual();
+  const s = PPC_SEMANAS[idx];
+  if(!estado.ppc) estado.ppc = {};
+  if(!estado.ppc[s.id]) estado.ppc[s.id] = {};
+  estado.ppc[s.id].real = ppc.toFixed(1);
+  render(); salvar();
+}
+
+const FAROL = [
+  {id:'f1',ind:'RADIER concluídas/semana',v:'≥ 14',y:'12-13',r:'< 12'},
+  {id:'f2',ind:'FABRICAÇÃO/semana',v:'≥ 13',y:'11-12',r:'< 11'},
+  {id:'f3',ind:'MONTAGEM/semana',v:'≥ 12',y:'10-11',r:'< 10'},
+  {id:'f4',ind:'ACAB1/semana (próprio + terc.)',v:'≥ 11',y:'9-10',r:'< 9'},
+  {id:'f5',ind:'ACAB2/semana',v:'≥ 12',y:'10-11',r:'< 10'},
+  {id:'f6',ind:'INFRA2/semana',v:'≥ 14',y:'12-13',r:'< 12'},
+  {id:'f7',ind:'Tempo radier→ACAB2 (dias)',v:'≤ 50',y:'51-58',r:'> 58',inv:true},
+  {id:'f8',ind:'Estoque entre etapas (dias)',v:'≥ 7',y:'5-6',r:'< 5'},
+  {id:'f9',ind:'Despesa Habitação/mês (R$ k)',v:'≤ 400',y:'400-500',r:'> 500',inv:true},
+  {id:'f10',ind:'Quadro pessoal incompleto (%)',v:'< 15',y:'15-25',r:'> 25',inv:true},
+  {id:'f11',ind:'AT chamados em aberto',v:'< 70',y:'70-100',r:'> 100',inv:true}
+];
+
+// ============= ESTADO =============
+const STORAGE_KEY = 'olevm_painel_2026_1_v2';
+let estado = carregar();
+
+function carregar(){
+  try{
+    const r = localStorage.getItem(STORAGE_KEY);
+    if(r) return JSON.parse(r);
+  }catch(e){}
+  return {etapas:{},acoes:{},farol:{},lastSaved:null,activeTab:'visao'};
+}
+
+function salvar(){
+  estado.lastSaved = new Date().toISOString();
+  try{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(estado));
+    document.getElementById('saveStatus').textContent = '✓ Salvo às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    document.getElementById('saveStatus').textContent = '⚠ Erro ao salvar';
+  }
+  setTimeout(()=>document.getElementById('saveStatus').textContent='',3000);
+}
+
+function exportar(){
+  const blob = new Blob([JSON.stringify(estado,null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'painel_olevm_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function resetar(){
+  if(confirm('Tem certeza? Vai apagar todos os dados preenchidos.')){
+    estado = {etapas:{},acoes:{},farol:{},lastSaved:null,activeTab:'visao'};
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+}
+
+// ============= TABS =============
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+    document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('active',p.id==='pane-'+tab));
+    estado.activeTab = tab;
+    window.scrollTo({top:0,behavior:'smooth'});
+    salvar();
+  });
+});
+
+// ============= CÁLCULOS =============
+function statusEtapa(etapa){
+  const real = parseFloat(estado.etapas[etapa.id]?.real || 0);
+  const pct = (real/etapa.unid)*100;
+  const hoje = new Date();
+  const inicio = new Date('2026-05-09');
+  const fim = new Date(etapa.dataMeta);
+  const totalDias = (fim - inicio)/(1000*60*60*24);
+  const passados = (hoje - inicio)/(1000*60*60*24);
+  const pctEsperado = Math.max(0,Math.min(100,(passados/totalDias)*100));
+  let status = 'g';
+  if(pct < pctEsperado - 15) status = 'r';
+  else if(pct < pctEsperado - 5) status = 'y';
+  return {pct,pctEsperado,status,real};
+}
+
+function diasUteisAte(data){
+  const hoje = new Date();
+  hoje.setHours(0,0,0,0);
+  const fim = new Date(data);
+  fim.setHours(0,0,0,0);
+  let count = 0;
+  const cur = new Date(hoje);
+  while(cur <= fim){
+    const d = cur.getDay();
+    if(d !== 0 && d !== 6) count++;
+    cur.setDate(cur.getDate()+1);
+  }
+  return Math.max(0,count-1);
+}
+
+function statusFarol(f){
+  const real = estado.farol[f.id]?.val;
+  if(real === '' || real === undefined) return null;
+  const v = parseFloat(real);
+  const parseLim = s => {const m = s.match(/-?\d+/g); return m?m.map(Number):[]};
+  const [vN] = parseLim(f.v);
+  const [yLo,yHi] = parseLim(f.y);
+  const [rN] = parseLim(f.r);
+  if(f.inv){
+    if(v <= vN) return 'g';
+    if(v <= (yHi||rN)) return 'y';
+    return 'r';
+  }
+  if(v >= vN) return 'g';
+  if(v >= (yLo||0)) return 'y';
+  return 'r';
+}
+
+// ============= RENDER =============
+function render(){
+  // Header
+  document.getElementById('today').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'short'});
+  document.getElementById('diasRest').textContent = diasUteisAte('2026-07-06') + ' dias úteis';
+
+  // Mini etapas (Visão Geral)
+  const miniEl = document.getElementById('miniEtapas');
+  miniEl.innerHTML = '';
+  let totalReal = 0, totalMeta = 0;
+  ETAPAS.forEach(e=>{
+    const s = statusEtapa(e);
+    totalReal += s.real; totalMeta += e.unid;
+    const dataFmt = new Date(e.dataMeta).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+    const dotCls = s.status==='r'?'dot-r':s.status==='y'?'dot-y':'dot-g';
+    const barColor = s.status==='r'?'var(--red)':s.status==='y'?'var(--yellow)':'var(--green)';
+    miniEl.innerHTML += `
+      <div class="mini">
+        <div class="nome">${e.nome} <i class="dot ${dotCls}"></i></div>
+        <div class="pct">${s.pct.toFixed(0)}%</div>
+        <div class="meta">${s.real}/${e.unid} • até ${dataFmt}</div>
+        <div class="bar"><div style="width:${Math.min(100,s.pct)}%;background:${barColor}"></div></div>
+      </div>`;
+  });
+  const pctGlobal = totalMeta>0?(totalReal/totalMeta)*100:0;
+  document.getElementById('progGlobal').textContent = pctGlobal.toFixed(1)+'%';
+  document.getElementById('globalBar').style.width = Math.min(100,pctGlobal)+'%';
+  document.getElementById('globalBar').textContent = pctGlobal.toFixed(1)+'% ('+totalReal+'/'+totalMeta+')';
+
+  // KPI ações
+  const acoesAll = getAcoes();
+  const concl = acoesAll.filter(a=>estado.acoes[a.id]?.status==='concluido').length;
+  document.getElementById('kpiAcoes').textContent = concl+'/'+acoesAll.length;
+  // badge
+  const pendentes = acoesAll.filter(a=>estado.acoes[a.id]?.status!=='concluido').length;
+  document.getElementById('badgeAcoes').textContent = pendentes;
+
+  // Alertas (Visão Geral)
+  const alerts = [];
+  ETAPAS.forEach(e=>{
+    const s = statusEtapa(e);
+    if(s.status==='r') alerts.push({ico:'🔴',txt:`<strong>${e.nome}</strong> atrasada — ${s.pct.toFixed(0)}% feito vs. ${s.pctEsperado.toFixed(0)}% esperado (resp. ${e.resp})`});
+    else if(s.status==='y') alerts.push({ico:'🟡',txt:`<strong>${e.nome}</strong> em atenção — ${s.pct.toFixed(0)}% feito vs. ${s.pctEsperado.toFixed(0)}% esperado`});
+  });
+  acoesAll.forEach(a=>{
+    if(estado.acoes[a.id]?.status==='risco') alerts.push({ico:'⚠️',txt:`<strong>${a.resp}</strong>: ${a.desc.slice(0,80)}${a.desc.length>80?'…':''} — em risco (prazo ${a.due})`});
+  });
+  FAROL.forEach(f=>{
+    const st = statusFarol(f);
+    if(st==='r') alerts.push({ico:'🚨',txt:`<strong>${f.ind}</strong> em vermelho`});
+  });
+  const alertEl = document.getElementById('alertList');
+  if(alerts.length===0){
+    alertEl.innerHTML = `<div class="alert-item"><span class="ico">✅</span><span>Nada em alerta no momento. Atualize os dados após cada PPC.</span></div>`;
+  }else{
+    alertEl.innerHTML = alerts.map(a=>`<div class="alert-item"><span class="ico">${a.ico}</span><span>${a.txt}</span></div>`).join('');
+  }
+
+  // Próximos 14 dias
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const lim = new Date(hoje); lim.setDate(lim.getDate()+14);
+  const upcoming = [];
+  ETAPAS.forEach(e=>{
+    const d = new Date(e.dataMeta);
+    if(d >= hoje && d <= lim) upcoming.push({d,ico:'★',txt:`<strong>${e.nome}</strong> — data-meta ${d.toLocaleDateString('pt-BR')} (${e.unid} unid., ${e.resp})`});
+  });
+  acoesAll.forEach(a=>{
+    if(!a.dueDt) return;
+    const d = new Date(a.dueDt+'T00:00:00');
+    const st = estado.acoes[a.id]?.status;
+    if(st==='concluido') return;
+    if(d >= hoje && d <= lim) upcoming.push({d,ico:'✦',txt:`<strong>${a.resp}</strong>: ${a.desc.slice(0,90)}${a.desc.length>90?'…':''} (${d.toLocaleDateString('pt-BR')})`});
+  });
+  upcoming.sort((a,b)=>a.d-b.d);
+  const next14El = document.getElementById('next14');
+  if(upcoming.length===0){
+    next14El.innerHTML = `<div class="alert-item"><span class="ico">📅</span><span>Sem marcos críticos nos próximos 14 dias.</span></div>`;
+  }else{
+    next14El.innerHTML = upcoming.map(u=>`<div class="alert-item"><span class="ico">${u.ico}</span><span>${u.txt}</span></div>`).join('');
+  }
+
+  // Cascata cards (Etapas)
+  const cardsEl = document.getElementById('etapasCards');
+  cardsEl.innerHTML = '';
+  ETAPAS.forEach(e=>{
+    const real = parseFloat(estado.etapas[e.id]?.real || 0);
+    const ritmo = parseFloat(estado.etapas[e.id]?.ritmo || 0);
+    const s = statusEtapa(e);
+    const dataFmt = new Date(e.dataMeta).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+    const tagClass = s.status==='r'?'tag-red':s.status==='y'?'tag-yellow':'tag-green';
+    const tagTxt = s.status==='r'?'ATRASADO':s.status==='y'?'ATENÇÃO':'NO RITMO';
+    const barColor = s.status==='r'?'var(--red)':s.status==='y'?'var(--yellow)':'var(--green)';
+    cardsEl.innerHTML += `
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">#${e.crit} ${e.nome} <span class="txt2" style="font-weight:400">— ${e.resp}</span></div>
+          <span class="tag ${tagClass}">${tagTxt}</span>
+        </div>
+        <div class="card-grid">
+          <div><div class="lbl">Meta</div><div class="val">${e.unid} unid.</div></div>
+          <div><div class="lbl">Data-meta</div><div class="val">${dataFmt}</div></div>
+          <div><div class="lbl">Ritmo/dia</div><div class="val">${e.prodDia}</div></div>
+          <div><div class="lbl">Ritmo/sem</div><div class="val">${e.prodSem}</div></div>
+        </div>
+        <div class="bar-wrap">
+          <div class="bar-fill" style="width:${Math.min(100,s.pct)}%;background:${barColor}">${s.pct.toFixed(0)}%</div>
+          <div class="bar-target" style="left:${Math.min(100,s.pctEsperado)}%" title="Esperado: ${s.pctEsperado.toFixed(0)}%"></div>
+        </div>
+        <div class="input-row">
+          <span class="txt2">Realizado:</span>
+          <input type="number" min="0" max="${e.unid}" value="${real}" data-id="${e.id}" data-field="real" placeholder="0">
+          <span class="txt2">/ ${e.unid}</span>
+          <span class="txt2" style="margin-left:auto">Ritmo sem.:</span>
+          <input type="number" min="0" step="0.01" value="${ritmo}" data-id="${e.id}" data-field="ritmo" placeholder="0">
+        </div>
+      </div>`;
+  });
+  cardsEl.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('change',e=>{
+      const id = e.target.dataset.id;
+      const f = e.target.dataset.field;
+      if(!estado.etapas[id]) estado.etapas[id] = {};
+      estado.etapas[id][f] = e.target.value;
+      render();
+    });
+  });
+
+  // Timeline
+  const tlEl = document.getElementById('timeline');
+  tlEl.innerHTML = '';
+  SEMANAS.forEach(s=>{
+    tlEl.innerHTML += `
+      <div class="tl-item">
+        <div class="tl-week">${s.label.split(' — ')[0]}</div>
+        <div class="tl-content">
+          <strong>${s.label.split(' — ')[1]}</strong>
+          <div class="tl-marks">• ${s.marcos.join('<br>• ')}</div>
+        </div>
+      </div>`;
+  });
+
+  // Ações — agrupadas por semana
+  const aEl = document.getElementById('actionList');
+  aEl.innerHTML = '';
+  const grupos = {};
+  SEMANA_RANGES.forEach(r=>grupos[r.id]=[]);
+  grupos.continuas = [];
+  grupos.outras = [];
+  acoesAll.forEach(a=>{
+    const grp = semanaDaAcao(a);
+    grupos[grp].push(a);
+  });
+  const semAtualId = semanaAtualId();
+  const renderAcaoCard = (a)=>{
+    const st = estado.acoes[a.id]?.status || 'pendente';
+    const cls = st==='concluido'?'done':'';
+    return `
+      <div class="action ${cls}">
+        <select data-id="${a.id}">
+          <option value="pendente" ${st==='pendente'?'selected':''}>⏳ Pendente</option>
+          <option value="emcurso" ${st==='emcurso'?'selected':''}>🔵 Em curso</option>
+          <option value="risco" ${st==='risco'?'selected':''}>⚠️ Em risco</option>
+          <option value="concluido" ${st==='concluido'?'selected':''}>✅ Concluído</option>
+        </select>
+        <div class="desc"><span class="resp">${a.resp}</span> — ${a.desc}</div>
+        <div class="due">${a.due}</div>
+        <button class="del" title="Excluir esta ação" data-del="${a.id}">×</button>
+      </div>`;
+  };
+  let html = '';
+  SEMANA_RANGES.forEach(r=>{
+    const itens = grupos[r.id];
+    if(itens.length === 0) return;
+    const curCls = r.id === semAtualId ? ' current' : '';
+    const tag = r.id === semAtualId ? ' <span class="tag tag-blue" style="font-size:9px;padding:1px 6px;margin-left:4px">ATUAL</span>' : '';
+    html += `<div class="week-group">
+      <div class="week-header${curCls}">📅 ${r.label}${tag}<span class="count">${itens.length} ${itens.length===1?'ação':'ações'}</span></div>
+      ${itens.map(renderAcaoCard).join('')}
+    </div>`;
+  });
+  if(grupos.continuas.length > 0){
+    html += `<div class="week-group">
+      <div class="week-header continuas">🔁 Contínuas / Sem data definida<span class="count">${grupos.continuas.length}</span></div>
+      ${grupos.continuas.map(renderAcaoCard).join('')}
+    </div>`;
+  }
+  if(grupos.outras.length > 0){
+    html += `<div class="week-group">
+      <div class="week-header outras">📌 Outras datas (fora do plano S1-S9)<span class="count">${grupos.outras.length}</span></div>
+      ${grupos.outras.map(renderAcaoCard).join('')}
+    </div>`;
+  }
+  if(!html){
+    html = `<div class="alert-item"><span class="ico">📝</span><span>Nenhuma ação cadastrada. Use o formulário acima para adicionar.</span></div>`;
+  }
+  aEl.innerHTML = html;
+  aEl.querySelectorAll('select').forEach(sel=>{
+    sel.addEventListener('change',e=>{
+      const id = e.target.dataset.id;
+      if(!estado.acoes[id]) estado.acoes[id] = {};
+      estado.acoes[id].status = e.target.value;
+      render();
+    });
+  });
+  aEl.querySelectorAll('.del').forEach(btn=>{
+    btn.addEventListener('click',e=>{
+      const id = e.target.dataset.del;
+      const a = acoesAll.find(x=>x.id===id);
+      if(!a) return;
+      if(confirm(`Excluir esta ação?\n\n${a.resp} — ${a.desc.slice(0,100)}${a.desc.length>100?'…':''}`)){
+        excluirAcao(id);
+      }
+    });
+  });
+  // Resumo de ações
+  const resumoEl = document.getElementById('acoesResumo');
+  if(resumoEl){
+    const pend = acoesAll.filter(a=>estado.acoes[a.id]?.status!=='concluido').length;
+    const risco = acoesAll.filter(a=>estado.acoes[a.id]?.status==='risco').length;
+    const custom = acoesAll.filter(a=>a.id.startsWith('c-')).length;
+    resumoEl.textContent = `${acoesAll.length} ações no total · ${pend} pendentes · ${risco} em risco${custom>0?` · ${custom} adicionada${custom>1?'s':''} por você`:''}`;
+  }
+
+  // Farol
+  const fEl = document.getElementById('farolTbody');
+  fEl.innerHTML = '';
+  FAROL.forEach(f=>{
+    const real = estado.farol[f.id]?.val || '';
+    const st = statusFarol(f);
+    const cls = st==='g'?'tag-green':st==='y'?'tag-yellow':st==='r'?'tag-red':'';
+    const txt = st==='g'?'Verde':st==='y'?'Amarelo':st==='r'?'Vermelho':'—';
+    fEl.innerHTML += `
+      <tr>
+        <td>${f.ind}</td>
+        <td class="txt2">${f.v}</td>
+        <td class="txt2">${f.y}</td>
+        <td class="txt2">${f.r}</td>
+        <td><input type="number" step="0.01" value="${real}" data-id="${f.id}"></td>
+        <td>${cls?`<span class="tag ${cls}">${txt}</span>`:`<span class="txt2">—</span>`}</td>
+      </tr>`;
+  });
+  fEl.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('change',e=>{
+      const id = e.target.dataset.id;
+      if(!estado.farol[id]) estado.farol[id] = {};
+      estado.farol[id].val = e.target.value;
+      render();
+    });
+  });
+
+  // Curva S
+  renderCurvaS();
+}
+
+function renderCurvaS(){
+  const idx = ppcSemanaAtual();
+  const sA = PPC_SEMANAS[idx];
+  const dataAtFmt = new Date(sA.dataRef+'T00:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+  document.getElementById('ppcSemAtual').textContent = sA.label+' ('+dataAtFmt+')';
+  const prev = getPpcPrev(sA.id);
+  const real = getPpcReal(sA.id);
+  document.getElementById('ppcPrev').textContent = prev != null ? prev.toFixed(1)+'%' : '—';
+  document.getElementById('ppcReal').textContent = real != null ? real.toFixed(1)+'%' : '—';
+  const varEl = document.getElementById('ppcVar');
+  if(real != null && prev != null){
+    const dif = real - prev;
+    const cls = dif < -5 ? 'tag-red' : (dif < 0 ? 'tag-yellow' : 'tag-green');
+    varEl.innerHTML = `<span class="tag ${cls}">${dif>0?'+':''}${dif.toFixed(1)} p.p.</span>`;
+  }else{
+    varEl.textContent = '—';
+  }
+
+  // SVG
+  const w = 800, h = 380;
+  const padL = 55, padR = 30, padT = 40, padB = 60;
+  const innerW = w - padL - padR, innerH = h - padT - padB;
+  const n = PPC_SEMANAS.length;
+  const xStep = innerW / (n - 1);
+  const xy = (i,v) => [padL + i*xStep, padT + innerH - (v/100)*innerH];
+
+  const prevPts = PPC_SEMANAS.map((s,i)=>xy(i, getPpcPrev(s.id) ?? 0));
+  const realPts = [];
+  PPC_SEMANAS.forEach((s,i)=>{ const r = getPpcReal(s.id); if(r != null) realPts.push({i,xy:xy(i,r)}); });
+
+  const smoothPath = pts => {
+    if(pts.length < 2) return pts.length === 1 ? `M ${pts[0][0]} ${pts[0][1]}` : '';
+    let d = `M ${pts[0][0]} ${pts[0][1]}`;
+    for(let i = 0; i < pts.length - 1; i++){
+      const p0 = pts[i-1] || pts[i];
+      const p1 = pts[i];
+      const p2 = pts[i+1];
+      const p3 = pts[i+2] || p2;
+      const cp1x = p1[0] + (p2[0] - p0[0]) / 6;
+      const cp1y = p1[1] + (p2[1] - p0[1]) / 6;
+      const cp2x = p2[0] - (p3[0] - p1[0]) / 6;
+      const cp2y = p2[1] - (p3[1] - p1[1]) / 6;
+      d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2[0]} ${p2[1]}`;
+    }
+    return d;
+  };
+
+  let gridLines = '', yLabels = '';
+  [0,25,50,75,100].forEach(v=>{
+    const y = padT + innerH - (v/100)*innerH;
+    gridLines += `<line x1="${padL}" y1="${y}" x2="${padL+innerW}" y2="${y}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="${v===0||v===100?'':'2,4'}"/>`;
+    yLabels += `<text x="${padL-10}" y="${y+4}" text-anchor="end" font-size="10" fill="#9aa7b6">${v}%</text>`;
+  });
+  let xLabels = '';
+  PPC_SEMANAS.forEach((s,i)=>{
+    const x = padL + i*xStep;
+    const d = new Date(s.dataRef+'T00:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+    xLabels += `<text x="${x}" y="${padT+innerH+18}" text-anchor="middle" font-size="11" fill="#e6ecf2" font-weight="700">${s.label}</text>`;
+    xLabels += `<text x="${x}" y="${padT+innerH+32}" text-anchor="middle" font-size="9" fill="#9aa7b6">${d}</text>`;
+  });
+
+  // Hoje
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const inicio = new Date(PPC_SEMANAS[0].dataRef+'T00:00:00');
+  const fim = new Date(PPC_SEMANAS[n-1].dataRef+'T00:00:00');
+  const prog = (hoje - inicio)/(fim - inicio);
+  let hojeLine = '';
+  if(prog >= 0 && prog <= 1){
+    const xH = padL + prog * innerW;
+    hojeLine = `<line x1="${xH}" y1="${padT}" x2="${xH}" y2="${padT+innerH}" stroke="#4aa8ff" stroke-dasharray="4,4" opacity="0.7"/>
+                <text x="${xH}" y="${padT-12}" text-anchor="middle" font-size="9" fill="#4aa8ff" font-weight="700">HOJE</text>`;
+  }
+
+  // Área entre realizado e previsto (até onde há realizado)
+  let areaPath = '';
+  if(realPts.length >= 2){
+    const realCoords = realPts.map(p=>p.xy);
+    const prevCoordsCorresp = realPts.map(p=>prevPts[p.i]);
+    const fwd = smoothPath(realCoords);
+    const back = smoothPath([...prevCoordsCorresp].reverse());
+    areaPath = fwd + ' L ' + prevCoordsCorresp[prevCoordsCorresp.length-1][0] + ' ' + prevCoordsCorresp[prevCoordsCorresp.length-1][1] + ' ' + back.replace(/^M/, 'L');
+  }
+
+  const prevPath = smoothPath(prevPts);
+  const realPath = realPts.length >= 2 ? smoothPath(realPts.map(p=>p.xy)) : '';
+
+  const prevDots = prevPts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="#9aa7b6"/>`).join('');
+  const realDots = realPts.map(p=>`<circle cx="${p.xy[0]}" cy="${p.xy[1]}" r="4.5" fill="#f59e0b" stroke="#fff" stroke-width="1.5"/>`).join('');
+
+  const svg = `
+    <svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;background:rgba(0,0,0,0.15);border-radius:8px;border:1px solid var(--border)" xmlns="http://www.w3.org/2000/svg">
+      ${gridLines}
+      ${areaPath ? `<path d="${areaPath}" fill="#f59e0b" opacity="0.15"/>` : ''}
+      <path d="${prevPath}" fill="none" stroke="#9aa7b6" stroke-width="2.5" stroke-linecap="round"/>
+      ${realPath ? `<path d="${realPath}" fill="none" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>` : ''}
+      ${prevDots}
+      ${realDots}
+      ${yLabels}
+      ${xLabels}
+      ${hojeLine}
+      <g transform="translate(${padL+15},${padT+12})">
+        <rect x="-8" y="-12" width="220" height="22" rx="4" fill="rgba(0,0,0,0.4)"/>
+        <line x1="0" y1="0" x2="20" y2="0" stroke="#9aa7b6" stroke-width="2.5"/>
+        <text x="26" y="4" font-size="11" fill="#e6ecf2">Previsto (Baseline)</text>
+        <line x1="125" y1="0" x2="145" y2="0" stroke="#f59e0b" stroke-width="2.5"/>
+        <text x="151" y="4" font-size="11" fill="#e6ecf2">Realizado</text>
+      </g>
+      <line x1="${padL}" y1="${padT+innerH}" x2="${padL+innerW}" y2="${padT+innerH}" stroke="#2c3744" stroke-width="1.5"/>
+      <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+innerH}" stroke="#2c3744" stroke-width="1.5"/>
+      <text x="${padL+innerW/2}" y="${h-8}" text-anchor="middle" font-size="11" fill="#9aa7b6">Tempo (semanas — sextas-feiras)</text>
+      <text x="18" y="${padT+innerH/2}" text-anchor="middle" font-size="11" fill="#9aa7b6" transform="rotate(-90 18 ${padT+innerH/2})">PPC acumulado (%)</text>
+    </svg>
+  `;
+  document.getElementById('curvaSContainer').innerHTML = svg;
+
+  // Tabela
+  let tbody = '';
+  const idxAtual = ppcSemanaAtual();
+  PPC_SEMANAS.forEach((s,i)=>{
+    const p = getPpcPrev(s.id);
+    const r = getPpcReal(s.id);
+    const dataFmt = new Date(s.dataRef+'T00:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+    let varCell = '<span class="txt2">—</span>';
+    let stCell = '<span class="txt2">—</span>';
+    if(r != null && p != null){
+      const dif = r - p;
+      const cls = dif < -5 ? 'tag-red' : (dif < 0 ? 'tag-yellow' : 'tag-green');
+      varCell = `<span class="tag ${cls}">${dif>0?'+':''}${dif.toFixed(1)} p.p.</span>`;
+      if(dif >= 0) stCell = '🟢 No ritmo';
+      else if(dif >= -5) stCell = '🟡 Atenção';
+      else stCell = '🔴 Atrasado';
+    }
+    const rowStyle = i === idxAtual ? ' style="background:rgba(74,168,255,0.06)"' : '';
+    const prevVal = estado.ppc?.[s.id]?.prev ?? '';
+    const realVal = estado.ppc?.[s.id]?.real ?? '';
+    tbody += `
+      <tr${rowStyle}>
+        <td><strong>${s.label}</strong>${i===idxAtual?' <span class="tag tag-blue" style="font-size:9px;padding:1px 5px">ATUAL</span>':''}</td>
+        <td class="txt2">${dataFmt}</td>
+        <td><input type="number" step="0.1" min="0" max="100" data-ppc-id="${s.id}" data-ppc-f="prev" value="${prevVal}" placeholder="${PPC_SEMANAS[i].prev}" style="width:70px"></td>
+        <td><input type="number" step="0.1" min="0" max="100" data-ppc-id="${s.id}" data-ppc-f="real" value="${realVal}" placeholder="—" style="width:70px"></td>
+        <td>${varCell}</td>
+        <td style="font-size:11px">${stCell}</td>
+      </tr>`;
+  });
+  document.getElementById('ppcTbody').innerHTML = tbody;
+  document.querySelectorAll('[data-ppc-id]').forEach(inp=>{
+    inp.addEventListener('change', e=>{
+      const id = e.target.dataset.ppcId;
+      const f = e.target.dataset.ppcF;
+      if(!estado.ppc) estado.ppc = {};
+      if(!estado.ppc[id]) estado.ppc[id] = {};
+      estado.ppc[id][f] = e.target.value;
+      render();
+    });
+  });
+}
+
+// Restaurar aba ativa
+if(estado.activeTab && estado.activeTab !== 'visao'){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===estado.activeTab));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('active',p.id==='pane-'+estado.activeTab));
+}
+
+render();
+
+// Auto-save em todo change
+document.body.addEventListener('change',()=>{
+  clearTimeout(window._svTm);
+  window._svTm = setTimeout(salvar,400);
+});
+</script>
+</body>
+</html>
